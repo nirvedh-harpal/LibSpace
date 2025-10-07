@@ -1,0 +1,41 @@
+{% extends 'reservations/base.html' %}
+
+{% block title %}Check In - Library Seat Reservation{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Check In</h3>
+                    <p class="text-center mb-4">
+                        Seat {{ reservation.seat.number }}<br>
+                        {{ reservation.start_time|date:"F j, Y" }}<br>
+                        {{ reservation.start_time|time:"H:i" }} - {{ reservation.end_time|time:"H:i" }}
+                    </p>
+
+                    <p class="text-center">
+                        An OTP has been sent to your email address.<br>
+                        Please enter it below to complete check-in.
+                    </p>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-lg text-center" 
+                                   name="otp" maxlength="6" pattern="\d{6}" 
+                                   placeholder="Enter 6-digit OTP" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Check In</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-link">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
