@@ -18,6 +18,20 @@
             <p>Your booking privileges are currently restricted due to multiple no-shows. Please contact the library staff for assistance.</p>
         </div>
     {% else %}
+        <!-- Display Pending Fines Alert -->
+        {% if fines > 0 %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading">⚠️ Pending Fines</h4>
+                <p>You have pending fines totaling <strong>₹{{ fines }}</strong>. Please clear your fines to avoid account restrictions.</p>
+                <form method="POST" action="{% url 'initiate_payment' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="amount" value="{{ fines }}">
+                    <button type="submit" class="btn btn-success btn-sm">Pay Now via Stripe</button>
+                </form>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
         <div class="mt-4">
             <a href="{% url 'seat_list' %}" class="btn btn-primary">Book a New Seat</a>
         </div>
@@ -170,6 +184,18 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if fines > 0 %}
+            <div class="alert alert-warning">
+                <h4 class="alert-heading">Pending Fines</h4>
+                <p>You have pending fines totaling ₹{{ fines }}. Please clear your fines to continue using library services.</p>
+                <form method="POST" action="{% url 'initiate_payment' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="amount" value="{{ fines }}">
+                    <button type="submit" class="btn btn-success">Pay Now</button>
+                </form>
+            </div>
+        {% endif %}
     </div>
     {% endif %}
 {% endblock %}

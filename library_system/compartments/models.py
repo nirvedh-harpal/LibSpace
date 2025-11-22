@@ -10,6 +10,8 @@ class Student(models.Model):
     no_show_count = models.IntegerField(default=0)
     last_penalty_date = models.DateTimeField(null=True, blank=True)
     is_restricted = models.BooleanField(default=False)
+    # fine payment fields
+    fines = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Outstanding fines in rupees")
 
     def __str__(self):
         return self.user.username

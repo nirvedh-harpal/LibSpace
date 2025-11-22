@@ -226,3 +226,37 @@ class Reservation(models.Model):
         except Exception as e:
             # Log the error but don't prevent the save
             print(f"Failed to send email: {e}")
+
+class Payment(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Amount paid in rupees")
+    status = models.CharField(
+        max_length=20,
+        choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')],
+        default='pending'
+    )
+    stripe_session_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_payment_intent_id = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['student', 'status']),
+            models.Index(fields=['stripe_session_id']),
+        ]
+
+    def __str__(self):
+        return f"Payment {self.id} - ₹{self.amount} - {self.status}"
+    
+    def clear_student_fines(self):
+        """
+        Clear student fines based on payment status and amount.
+        Called when payment is successfully completed.
+        """
+        if self.status == 'completed':
+            # Reduce student fines by the payment amount
+            if self.student.fines > 0:
+                self.student.fines = max(0, self.student.fines - self.amount)
+                self.student.save()

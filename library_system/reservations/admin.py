@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import LibrarySettings, Seat, Reservation
+from .models import LibrarySettings, Payment, Seat, Reservation
 
 @admin.register(LibrarySettings)
 class LibrarySettingsAdmin(admin.ModelAdmin):
@@ -70,3 +70,9 @@ class ReservationAdmin(admin.ModelAdmin):
     def mark_as_completed(self, request, queryset):
         queryset.filter(status='checked_in').update(status='completed')
     mark_as_completed.short_description = "Mark selected reservations as completed"
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_filter = ['status', 'created_at']
+    search_fields = ['reservation__student__user__username', 'reservation__seat__number']
+    readonly_fields = ['created_at']

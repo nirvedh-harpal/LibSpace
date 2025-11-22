@@ -1,0 +1,13 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*/venv/*
+venv
+*.pyc
+.DS_Store
+*.sqlite3
+/media/
+/staticfiles/
+.env
+*.log
+celerybeat-schedule
+migrations
