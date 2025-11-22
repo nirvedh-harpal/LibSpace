@@ -10,11 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
+import environ
 from pathlib import Path
 from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -24,10 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-w7_*a4hh1c*n%nd2lnb$yzdl4rsf5a^olkz+590sp@vp5q1(=&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -135,6 +139,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -150,12 +156,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'hnirvedh@gmail.com'
-EMAIL_HOST_PASSWORD = 'lsut wwhd wjdb wexv'
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default='')
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default='')
 
-STRIPE_PUBLIC_KEY = 'pk_test_51SU6PqF2ZCirC0KKZyzpLs5NOmpBifu7ovRaV6BfAAVx5XZlbTZyOiABSEHZuYmCOS12hFtGJXHKm5hYsqg2doMy009un4QCVw'
-STRIPE_SECRET_KEY = 'sk_test_51SU6PqF2ZCirC0KKlPng2mL9Kt6O3Kl2G5jwt8notNfEu2I2jHt8XTXgqVnrFj9tR9UimPJLKgBFxEuhf4O4bMlw00IWYMAPT9'
-STRIPE_WEBHOOK_SECRET = 'whsec_13825aba5f40c88e45e0e9789769785e8bc26a9e82008f89e7bbea76714de6a7'
+STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY", default='')
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default='')
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default='')
 
 # Django REST Framework configuration with API versioning
 REST_FRAMEWORK = {
@@ -166,8 +172,8 @@ REST_FRAMEWORK = {
 }
 
 # Celery configuration
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default='redis://localhost:6379/0')
 
 CELERY_BEAT_SCHEDULE = {
     'cancel-overdue-reservations': {
