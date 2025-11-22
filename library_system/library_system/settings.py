@@ -10,10 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
+import environ
 from pathlib import Path
+import dj_database_url
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,10 +30,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-w7_*a4hh1c*n%nd2lnb$yzdl4rsf5a^olkz+590sp@vp5q1(=&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -38,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'reservations',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -74,12 +82,37 @@ WSGI_APPLICATION = 'library_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
+# Caching (in-memory for development; use Redis/Memcached in production)
+CACHES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-library-cache',
     }
 }
+
+
+DATABASE_URL = env("DATABASE_URL", default=None)
+
+if DEBUG:
+    # Local development → use SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    # Production (Render) → MUST use PostgreSQL
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL is required in production but missing!")
+
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
 
 
 # Password validation
@@ -105,8 +138,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Asia/Kolkata'
+USE_TZ = True
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 
@@ -122,16 +157,45 @@ STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Authentication settings
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
 
-#email 
+# Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'hnirvedh@gmail.com'
-EMAIL_HOST_PASSWORD = 'lsut wwhd wjdb wexv'
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default='')
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default='')
+
+STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY", default='')
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default='')
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default='')
+
+# Django REST Framework configuration with API versioning
+REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
+    'DEFAULT_VERSION': '1.0',
+    'ALLOWED_VERSIONS': ['1.0', '2.0'],
+    'VERSION_PARAM': 'version',
+}
+
+# Celery configuration
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default='redis://localhost:6379/0')
+
+CELERY_BEAT_SCHEDULE = {
+    'cancel-overdue-reservations': {
+        'task': 'reservations.tasks.auto_cancel_overdue_reservations',
+        'schedule': 60,
+    },
+}

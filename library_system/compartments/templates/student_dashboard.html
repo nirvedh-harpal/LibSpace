@@ -22,30 +22,6 @@
     <div class="p-4 d-flex justify-content-end">
         <a href="{% url 'logout' %}" class="btn btn-danger logout-btn">Logout</a>
     </div>
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-header text-center">
-                <h1>Welcome to Student Dashboard</h1>
-            </div>
-            <div class="card-body">
-                <h2 class="text-center">Name: {{ student.user.username }}</h2>
-                <h2 class="text-center">Roll Number: {{ student.roll_number }}</h2>
-
-                {% if error %}
-                    <div class="alert alert-danger text-center mt-3">{{ error }}</div>
-                {% elif compartment %}
-                    <div class="alert alert-info text-center mt-3">
-                        <p>Your compartment number: <strong>{{ compartment.number }}</strong></p>
-                        {% if otp %}
-                            <p>Your OTP: <strong>{{ otp.code }}</strong></p>
-                        {% else %}
-                            <p>No OTP generated for your compartment.</p>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>

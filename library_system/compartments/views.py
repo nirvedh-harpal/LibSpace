@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages  # Import to use Django messages
 from django.db import IntegrityError
 from django.contrib.auth import logout
+from django_ratelimit.decorators import ratelimit
 
 def login_view(request):
     if request.method == 'POST':
@@ -99,6 +100,7 @@ def generate_otp(request, compartment):
     return str(random.randint(100000, 999999))
 
 @login_required
+@ratelimit(key='ip', rate='20/m', block=True)
 def assign_compartment(request):
     if not request.user.is_staff:
         return redirect('login')
