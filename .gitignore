@@ -10,7 +10,6 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 media/
-staticfiles/
 static/
 .env
 .env.*
@@ -21,6 +20,7 @@ celerybeat.pid
 
 # Virtual environment
 venv/
+
 env/
 ENV/
 .venv/

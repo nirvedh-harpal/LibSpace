@@ -63,7 +63,11 @@ def dashboard(request):
     otp_cache_key = f"otp_user_{student.user.id}"
     compartment = cache.get(compartment_cache_key)
     if compartment is None:
-        compartment = student.compartment
+        compartment = None
+        try:
+            compartment = student.compartment
+        except Exception as e:
+            compartment = None
         cache.set(compartment_cache_key, compartment, 60)
     
     otp = cache.get(otp_cache_key)

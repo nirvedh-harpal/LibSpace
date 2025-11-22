@@ -1,0 +1,31 @@
+/* Status styles */
+body{
+    font-family: sans-serif;
+}
+span {
+    font-weight: bold;
+}
+
+/* Container for dashboards */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+.alert{
+    border-radius: 0px;
+}
+
+
+
+
