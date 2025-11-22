@@ -1,6 +1,3 @@
-# Celery configuration
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 """
 Django settings for library_system project.
 
@@ -14,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -158,3 +156,15 @@ EMAIL_HOST_PASSWORD = 'lsut wwhd wjdb wexv'
 STRIPE_PUBLIC_KEY = 'pk_test_51SU6PqF2ZCirC0KKZyzpLs5NOmpBifu7ovRaV6BfAAVx5XZlbTZyOiABSEHZuYmCOS12hFtGJXHKm5hYsqg2doMy009un4QCVw'
 STRIPE_SECRET_KEY = 'sk_test_51SU6PqF2ZCirC0KKlPng2mL9Kt6O3Kl2G5jwt8notNfEu2I2jHt8XTXgqVnrFj9tR9UimPJLKgBFxEuhf4O4bMlw00IWYMAPT9'
 STRIPE_WEBHOOK_SECRET = 'whsec_13825aba5f40c88e45e0e9789769785e8bc26a9e82008f89e7bbea76714de6a7'
+
+
+# Celery configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+CELERY_BEAT_SCHEDULE = {
+    'cancel-overdue-reservations': {
+        'task': 'reservations.tasks.auto_cancel_overdue_reservations',
+        'schedule': 60,
+    },
+}
