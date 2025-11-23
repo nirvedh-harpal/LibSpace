@@ -219,7 +219,7 @@ class Reservation(models.Model):
             send_mail(
                 subject,
                 message,
-                settings.DEFAULT_FROM_EMAIL,
+                settings.EMAIL_HOST_USER,
                 [self.student.user.email],
                 fail_silently=False,
             )
