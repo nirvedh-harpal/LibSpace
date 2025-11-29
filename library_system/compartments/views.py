@@ -1,11 +1,12 @@
 import random
 import datetime
 from django.utils import timezone
-from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+
+from reservations.tasks import send_email_task
 from .models import Compartment, Student, OTP
 from django.contrib.auth.models import User
 from django.contrib import messages  # Import to use Django messages
@@ -24,7 +25,7 @@ def login_view(request):
             if user.is_staff:
                 return redirect('security_dashboard')
             else:
-                return redirect('student_dashboard')
+                return redirect('dashboard')
         else:
             messages.warning(request, "Incorrect username or password")
             return render(request, 'login.html')
@@ -132,7 +133,7 @@ def assign_compartment(request):
         compartment.save()
 
         # Save OTP to the OTP model
-        otp_instance = OTP(student=student, code=otp)
+        otp_instance = OTP(student=student, code=otp, compartment=compartment)
         otp_instance.save()
         
         # Send OTP email to the student
@@ -140,8 +141,8 @@ def assign_compartment(request):
         message = f'Dear {student.user.username},\n\nYour OTP for the compartment {compartment.number} is {otp}. Please use this OTP for deallocation.'
         email_from = 'hnirvedh@gmail.com'  # Replace with your email
         recipient_list = [student.user.email]
-        send_mail(subject, message, email_from, recipient_list)
-        
+        send_email_task.delay(subject, message, recipient_list, email_from)
+
         return redirect('security_dashboard')
     
     return redirect('security_dashboard')
@@ -156,7 +157,7 @@ def deallocate_compartment(request, compartment_id):
         student = compartment.student
         otp = OTP.objects.get(student=student)
 
-        if otp.code == otp_input:
+        if otp.code == otp_input and otp.compartment == compartment:
             compartment.student = None
             compartment.is_empty = True
             compartment.save()
@@ -167,7 +168,7 @@ def deallocate_compartment(request, compartment_id):
             message = f'Dear {student.user.username},\n\nYour compartment {compartment.number} has been successfully deallocated.'
             email_from = 'hnirvedh@gmail.com'  # Replace with your email
             recipient_list = [student.user.email]
-            send_mail(subject, message, email_from, recipient_list)
+            send_email_task.delay(subject, message, recipient_list, email_from)
             messages.success(request, f"Compartment {compartment.number} deallocated successfully!")
             return redirect('security_dashboard')
         else:

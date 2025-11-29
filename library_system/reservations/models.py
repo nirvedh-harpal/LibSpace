@@ -71,11 +71,24 @@ class Seat(models.Model):
 
     @classmethod
     def get_available_seats(cls, start_time, end_time):
-        available_seats = []
-        for seat in cls.objects.filter(is_active=True):
-            if seat.is_available(start_time, end_time):
-                available_seats.append(seat)
-        return available_seats
+        from django.db.models import Exists, OuterRef
+    
+        # Subquery to find conflicting reservations
+        conflicting = Reservation.objects.filter(
+            seat_id=OuterRef('pk'),
+            status__in=['reserved', 'checked_in'],
+            start_time__lt=end_time,
+            end_time__gt=start_time
+        )
+        
+        # Get seats with NO conflicts
+        return cls.objects.filter(
+            is_active=True
+        ).annotate(
+            has_conflict=Exists(conflicting)
+        ).filter(
+            has_conflict=False
+        )
 
 class Reservation(models.Model):
     STATUS_CHOICES = [
@@ -216,7 +229,8 @@ class Reservation(models.Model):
 
     def _send_email(self, subject, message):
         try:
-            send_mail(
+            from reservations.tasks import send_email_task
+            send_email_task.delay(
                 subject,
                 message,
                 settings.EMAIL_HOST_USER,

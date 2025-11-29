@@ -56,6 +56,7 @@ class Compartment(models.Model):
 class OTP(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
+    compartment = models.ForeignKey(Compartment, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     generated_at = models.DateTimeField()  # Add this field
 

@@ -5,12 +5,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # API v1 endpoints
-    path('api/v1/', include(([
-        path('compartments/', include('compartments.urls')),
-        path('reservations/', include('reservations.urls')),
-    ], 'api'), namespace='v1')),
-    # Keep legacy endpoints for backward compatibility
     path('', include('compartments.urls')),
     path('reservations/', include('reservations.urls')),
+    path("v1/reservations/", include(("reservations.v1.urls", "reservations_v1"), namespace="reservations_v1")),
 ]

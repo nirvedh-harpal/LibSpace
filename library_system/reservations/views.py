@@ -54,7 +54,7 @@ def dashboard(request):
         ).order_by('-start_time')
     
         # Add pagination for past reservations
-        past_paginator = Paginator(past_reservations_qs, 2)  # Show 10 per page
+        past_paginator = Paginator(past_reservations_qs, 10)  # Show 10 per page
         past_reservations = past_paginator.get_page(past_page)
         cache.set(past_page_cache_key, past_reservations, 60)  # Cache for 60 seconds
 
@@ -249,8 +249,8 @@ def initiate_payment(request):
             amount = float(amount)
             
             # Validate amount doesn't exceed fines
-            if amount > float(student.fines):
-                messages.error(request, f"Payment amount cannot exceed outstanding fines of ₹{student.fines}")
+            if amount != float(student.fines):
+                messages.error(request, f"Payment amount must match outstanding fines of ₹{student.fines}")
                 return redirect('dashboard')
             
             # Create Stripe Checkout Session with INR currency
