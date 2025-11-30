@@ -1,3 +1,4 @@
+import datetime
 from celery import shared_task
 from django.utils import timezone
 from reservations.models import Reservation
@@ -7,7 +8,7 @@ from django.conf import settings
 @shared_task
 def auto_cancel_overdue_reservations():
     print("Running auto-cancel overdue reservations task...")
-    now = timezone.now()
+    now = datetime.datetime.now()
     overdue = Reservation.objects.filter(
         status='reserved',
         start_time__lt=now

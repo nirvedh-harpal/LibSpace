@@ -185,7 +185,7 @@
             </div>
         </div>
 
-        {% if fines > 0 %}
+        {% comment %} {% if fines > 0 %}
             <div class="alert alert-warning">
                 <h4 class="alert-heading">Pending Fines</h4>
                 <p>You have pending fines totaling ₹{{ fines }}. Please clear your fines to continue using library services.</p>
@@ -195,7 +195,7 @@
                     <button type="submit" class="btn btn-success">Pay Now</button>
                 </form>
             </div>
-        {% endif %}
+        {% endif %} {% endcomment %}
     </div>
     {% endif %}
 {% endblock %}
