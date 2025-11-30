@@ -94,7 +94,7 @@ CACHES = {
 
 DATABASE_URL = env("DATABASE_URL", default=None)
 
-if DEBUG:
+if False:
     # Local development → use SQLite
     DATABASES = {
         'default': {
