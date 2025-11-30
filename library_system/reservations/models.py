@@ -180,11 +180,8 @@ class Reservation(models.Model):
         return self.start_time + timedelta(minutes=settings.check_in_buffer)
 
     def can_check_in(self):
-        now = timezone.now()
         return (
-            self.status == 'reserved' and
-            self.start_time <= now and
-            now <= self.auto_cancel_deadline()
+            self.status == 'reserved'
         )
 
     def check_in(self, otp=None):
